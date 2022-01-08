@@ -5,6 +5,7 @@ import com.u1tramarinet.imageclustering.model.AsyncTask;
 import com.u1tramarinet.imageclustering.model.Clustering;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
@@ -14,8 +15,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 
+import javax.imageio.ImageIO;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -61,11 +67,6 @@ public class MainViewController extends BaseController<MainApplication> {
         new AsyncTask<Image, Image>() {
             @Override
             public Image doInBackground(Image input) {
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 return clustering.execute(input);
             }
 
@@ -81,8 +82,14 @@ public class MainViewController extends BaseController<MainApplication> {
         if (application == null) return;
         if (afterImage.getImage() == null) return;
         File file = application.showSaveDialog("画像保存", getImageFilters());
+
         if (file != null) {
-            
+            System.out.println("selected file=" + file.getAbsolutePath());
+            String extension = getExtension(file);
+            System.out.println("selected file's extension=" + extension);
+            if ("png".equals(extension) || "jpg".equals(extension)) {
+                saveImage(file);
+            }
         }
     }
 
@@ -109,6 +116,31 @@ public class MainViewController extends BaseController<MainApplication> {
         if (tabWidth >= 0) {
             tabImages.setTabMinWidth(tabWidth);
             tabImages.setTabMaxWidth(tabWidth);
+        }
+    }
+
+    private String getExtension(File file) {
+        if (file == null) {
+            return "";
+        }
+        String fileName = file.getName();
+        return fileName.substring(fileName.lastIndexOf(".") + 1);
+    }
+
+    private void saveImage(File file, String formatName) {
+        try {
+            ImageIO.write(SwingFXUtils.fromFXImage(afterImage.getImage(), null), formatName, file);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void saveImage(File file) {
+        try (ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(afterImage.getImage().getUrl()).openStream())) {
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

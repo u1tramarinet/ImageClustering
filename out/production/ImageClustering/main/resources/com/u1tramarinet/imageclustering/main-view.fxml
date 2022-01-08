@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<?import com.u1tramarinet.imageclustering.view.ResizableImageView?>
+<BorderPane xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.u1tramarinet.imageclustering.controller.MainViewController">
+    <center>
+        <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER"
+                 fx:id="tabImages">
+            <tabs>
+                <Tab text="Before">
+                    <VBox>
+                        <padding>
+                            <Insets top="5.0" left="5.0" right="5.0"/>
+                        </padding>
+                        <ScrollPane fx:id="beforeScrollPane">
+                            <content>
+                                <ResizableImageView pickOnBounds="true" preserveRatio="true"
+                                                    fx:id="beforeImage"/>
+                            </content>
+                        </ScrollPane>
+                    </VBox>
+                </Tab>
+                <Tab text="After">
+                    <VBox>
+                        <padding>
+                            <Insets top="5.0" left="5.0" right="5.0"/>
+                        </padding>
+                        <ScrollPane fx:id="afterScrollPane">
+                            <content>
+                                <ResizableImageView pickOnBounds="true" preserveRatio="true"
+                                                    fx:id="afterImage"/>
+                            </content>
+                        </ScrollPane>
+                    </VBox>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+    <top>
+        <MenuBar BorderPane.alignment="CENTER">
+            <menus>
+                <Menu text="File">
+                    <MenuItem text="Open" onAction="#onOpenClicked"/>
+                    <MenuItem text="Save" onAction="#onSaveClicked"/>
+                    <MenuItem text="Reset" onAction="#onResetClicked"/>
+                    <MenuItem text="Exit" onAction="#onExitClicked"/>
+                </Menu>
+                <Menu text="Edit">
+                </Menu>
+            </menus>
+        </MenuBar>
+    </top>
+    <right>
+        <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER"/>
+    </right>
+</BorderPane>

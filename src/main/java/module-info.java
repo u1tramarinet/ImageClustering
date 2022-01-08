@@ -1,9 +1,10 @@
 module com.u1tramarinet.imageclustering {
     requires javafx.controls;
     requires javafx.fxml;
+    requires javafx.swing;
 
 
-    opens com.u1tramarinet.imageclustering to javafx.fxml;
+    opens com.u1tramarinet.imageclustering to javafx.fxml, javafx.swing;
     exports com.u1tramarinet.imageclustering;
     exports com.u1tramarinet.imageclustering.controller;
     opens com.u1tramarinet.imageclustering.controller to javafx.fxml;
