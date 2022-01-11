@@ -1,27 +1,25 @@
 package com.u1tramarinet.imageclustering.controller;
 
+import com.u1tramarinet.imageclustering.FileUtils;
 import com.u1tramarinet.imageclustering.MainApplication;
 import com.u1tramarinet.imageclustering.model.AsyncTask;
 import com.u1tramarinet.imageclustering.model.Clustering;
+import com.u1tramarinet.imageclustering.model.ImageData;
+import com.u1tramarinet.imageclustering.model.Pixel;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.image.*;
 import javafx.stage.FileChooser;
 
-import javax.imageio.ImageIO;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -60,21 +58,36 @@ public class MainViewController extends BaseController<MainApplication> {
         if (application == null) return;
         File file = application.showOpenDialog("画像選択", getImageFilters());
         if (file == null) return;
-        Image original = new Image("file:" + file.getAbsolutePath());
-        beforeImage.setImage(original);
         afterImage.setImage(null);
+        String originalUrlStr;
+        try {
+            originalUrlStr = file.toURI().toURL().toString();
+            beforeImage.setImage(new Image(originalUrlStr));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            beforeImage.setImage(null);
+            return;
+        }
+
+//        String tempFileUrlStr = FileUtils.createTempFileUrl(originalUrlStr);
+//        if (tempFileUrlStr == null) return;
+//        Image tempImage = new Image(tempFileUrlStr);
         application.resize();
+
         new AsyncTask<Image, Image>() {
             @Override
             public Image doInBackground(Image input) {
-                return clustering.execute(input);
+                System.out.println("doInBackground() input=" + input);
+                return createImage(
+                        clustering.execute(createImageData(input)));
             }
 
             @Override
             public void onPostExecute(Image output) {
+                System.out.println("onPostExecute() output=" + output);
                 afterImage.setImage(output);
             }
-        }.execute(original);
+        }.execute(beforeImage.getImage());
     }
 
     @FXML
@@ -84,11 +97,9 @@ public class MainViewController extends BaseController<MainApplication> {
         File file = application.showSaveDialog("画像保存", getImageFilters());
 
         if (file != null) {
-            System.out.println("selected file=" + file.getAbsolutePath());
-            String extension = getExtension(file);
-            System.out.println("selected file's extension=" + extension);
+            String extension = FileUtils.getExtensionName(file.getName());
             if ("png".equals(extension) || "jpg".equals(extension)) {
-                saveImage(file);
+                FileUtils.save(file, afterImage.getImage());
             }
         }
     }
@@ -96,6 +107,9 @@ public class MainViewController extends BaseController<MainApplication> {
     @FXML
     public void onResetClicked(ActionEvent event) {
         beforeImage.setImage(null);
+        Image tempImage = afterImage.getImage();
+        if (tempImage == null) return;
+        FileUtils.deleteFile(tempImage.getUrl());
         afterImage.setImage(null);
     }
 
@@ -119,28 +133,27 @@ public class MainViewController extends BaseController<MainApplication> {
         }
     }
 
-    private String getExtension(File file) {
-        if (file == null) {
-            return "";
+    private ImageData createImageData(Image image) {
+        ImageData imageData = new ImageData();
+        imageData.width = (int) image.getWidth();
+        imageData.height = (int) image.getHeight();
+        imageData.pixels = new ArrayList<>();
+        PixelReader reader = image.getPixelReader();
+        for (int y = 0; y < imageData.height; y++) {
+            for (int x = 0; x < imageData.width; x++) {
+                Pixel pixel = new Pixel(x, y, reader.getColor(x, y));
+                imageData.pixels.add(pixel);
+            }
         }
-        String fileName = file.getName();
-        return fileName.substring(fileName.lastIndexOf(".") + 1);
+        return imageData;
     }
 
-    private void saveImage(File file, String formatName) {
-        try {
-            ImageIO.write(SwingFXUtils.fromFXImage(afterImage.getImage(), null), formatName, file);
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+    private Image createImage(ImageData imageData) {
+        WritableImage image = new WritableImage(imageData.width, imageData.height);
+        PixelWriter writer = image.getPixelWriter();
+        for (Pixel pixel : imageData.pixels) {
+            writer.setColor(pixel.getX(), pixel.getY(), pixel.getColor());
         }
-    }
-
-    private void saveImage(File file) {
-        try (ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(afterImage.getImage().getUrl()).openStream())) {
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return image;
     }
 }

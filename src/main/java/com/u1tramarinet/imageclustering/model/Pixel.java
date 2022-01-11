@@ -2,8 +2,67 @@ package com.u1tramarinet.imageclustering.model;
 
 import javafx.scene.paint.Color;
 
-public class Pixel {
-    public int x;
-    public int y;
-    public Color color;
+import java.util.Arrays;
+
+public class Pixel extends Point {
+    private static final int DEGREE = 3;
+    private final int x;
+    private final int y;
+    private Color color;
+
+    public Pixel(int x, int y, Color color) {
+        super(Arrays.asList(color.getRed(), color.getGreen(), color.getBlue()));
+        this.x = x;
+        this.y = y;
+        this.color = color;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+        set(0, color.getRed());
+        set(1, color.getGreen());
+        set(2, color.getBlue());
+    }
+
+    @Override
+    public void set(int index, double value) {
+        if (index >= DEGREE) {
+            throw new IllegalArgumentException();
+        }
+        switch (index) {
+            case 0:
+                color = Color.color(color.getOpacity(), value, color.getGreen(), color.getBlue());
+            case 1:
+                color = Color.color(color.getOpacity(), color.getRed(), value, color.getBlue());
+            case 2:
+                color = Color.color(color.getOpacity(), color.getRed(), color.getGreen(), value);
+        }
+        super.set(index, value);
+    }
+
+    public Color getColor() {
+        return this.color;
+    }
+
+    @Override
+    public int getDegree() {
+        return DEGREE;
+    }
+
+    @Override
+    public String toString() {
+        return "Pixel{" +
+                "x=" + x +
+                ", y=" + y +
+                ", color=" + color +
+                '}';
+    }
 }
