@@ -11,6 +11,7 @@ public class Distance {
             double sub = one.get(i) - another.get(i);
             sum += Math.pow(sub, 2);
         }
-        return Math.sqrt(sum);
+        return sum;
+//        return Math.sqrt(sum);
     }
 }

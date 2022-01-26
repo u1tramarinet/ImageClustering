@@ -1,5 +1,7 @@
 package com.u1tramarinet.imageclustering.model;
 
+import javafx.scene.paint.Color;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,6 +13,12 @@ public class Clustering {
     private static final boolean DETAIL_LOG_ENABLED = false;
 
     public ImageData execute(ImageData imageData) {
+        final int clusterNum = 4;
+        final int trialCount = 10;
+        return execute(imageData, clusterNum, trialCount);
+    }
+
+    public ImageData execute(ImageData imageData, int clusterNum, int trialCount) {
         List<Pixel> pixels = imageData.pixels;
         if (pixels == null || pixels.isEmpty()) {
             return imageData;
@@ -22,23 +30,21 @@ public class Clustering {
             }
         }
         pixels.removeAll(transparentPixels);
-        pixels = executeInternal(pixels);
+        pixels = executeInternal(pixels, clusterNum, trialCount);
         imageData.pixels.clear();
         imageData.pixels.addAll(pixels);
         imageData.pixels.addAll(transparentPixels);
         return imageData;
     }
 
-    private List<Pixel> executeInternal(List<Pixel> pixels) {
-        final int k = 4;
-        final int trialCount = 10;
+    private List<Pixel> executeInternal(List<Pixel> pixels, int clusterNum, int trialCount) {
         final int d = getDegree(pixels);
         List<Cluster> clusters = null;
-        List<Point> centroids = createInitialCentroids(k, d, pixels);
+        List<Point> centroids = createInitialCentroids(clusterNum, d, pixels);
         for (int i = 0; i < trialCount; i++) {
             outputLog("clustering progress(" + (i + 1) + "/" + trialCount + ") start");
             clusters = assignPixelsToClusters(centroids, pixels);
-            centroids = createCentroids(k, d, clusters);
+            centroids = createCentroids(clusterNum, d, clusters);
             outputLog("clustering progress(" + (i + 1) + "/" + trialCount + ") finish");
         }
         return createPixelsFromCentroids(clusters);
@@ -83,11 +89,12 @@ public class Clustering {
         outputLog("createCentroids() start");
         List<Point> centroids = new ArrayList<>();
         List<Double> averages = new ArrayList<>();
-        for (int i = 0; i < d; i++) {
-            averages.add(0d);
-        }
         for (int i = 0; i < k; i++) {
             outputDetailLog("createCentroids() create (" + (i + 1) + "/" + k + ") start");
+            averages.clear();
+            for (int l = 0; l < d; l++) {
+                averages.add(0d);
+            }
             Cluster cluster = clusters.get(i);
 
             int size = cluster.getPixels().size();
@@ -152,10 +159,7 @@ public class Clustering {
             System.out.println("centroid r=" + centroid.get(0) + ", g=" + centroid.get(1) + ", b=" + centroid.get(2));
             System.out.println("cluster size=" + cluster.getPixels().size());
             for (Pixel pixel : cluster.getPixels()) {
-                for (int d = 0; d < pixel.getDegree(); d++) {
-                    pixel.set(d, centroid.get(d));
-                }
-                newPixels.add(pixel);
+                newPixels.add(new Pixel(pixel.getX(), pixel.getY(), Color.color(centroid.get(0), centroid.get(1), centroid.get(2), pixel.getColor().getOpacity())));
             }
         }
         return newPixels;

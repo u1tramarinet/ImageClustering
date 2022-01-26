@@ -49,12 +49,24 @@
                     <MenuItem text="Reset" onAction="#onResetClicked"/>
                     <MenuItem text="Exit" onAction="#onExitClicked"/>
                 </Menu>
-                <Menu text="Edit">
+                <Menu text="Run">
+                    <MenuItem text="K-Means" onAction="#onKMeansClicked"/>
                 </Menu>
             </menus>
         </MenuBar>
     </top>
     <right>
-        <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER"/>
+        <VBox prefHeight="200.0" prefWidth="150.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="5.0" left="15.0" right="15.0"/>
+            </padding>
+            <Label fx:id="labelClusterNum"/>
+            <Slider fx:id="sliderClusterNum" min="2" max="12" showTickLabels="true" showTickMarks="true"
+                    majorTickUnit="5" minorTickCount="1"/>
+
+            <Label fx:id="labelTrialCount" />
+            <Slider fx:id="sliderTrialCount" min="1" max="51" showTickLabels="true" showTickMarks="true"
+                    majorTickUnit="10" minorTickCount="5" blockIncrement="1"/>
+        </VBox>
     </right>
 </BorderPane>

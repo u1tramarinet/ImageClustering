@@ -39,11 +39,11 @@ public class Pixel extends Point {
         }
         switch (index) {
             case 0:
-                color = Color.color(color.getOpacity(), value, color.getGreen(), color.getBlue());
+                color = Color.color(value, color.getGreen(), color.getBlue(), color.getOpacity());
             case 1:
-                color = Color.color(color.getOpacity(), color.getRed(), value, color.getBlue());
+                color = Color.color(color.getRed(), value, color.getBlue(), color.getOpacity());
             case 2:
-                color = Color.color(color.getOpacity(), color.getRed(), color.getGreen(), value);
+                color = Color.color(color.getRed(), color.getGreen(), value, color.getOpacity());
         }
         super.set(index, value);
     }
